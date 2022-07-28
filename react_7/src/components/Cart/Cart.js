@@ -3,6 +3,7 @@ import classes from './Cart.module.css'
 import { useContext } from 'react'
 import CartList from './../../context/cart-list'
 import Modal from './../UI/Modal'
+import Item from './Item'
 
 
 
@@ -11,15 +12,17 @@ const Cart = dataProps => {
 
 
   const listContext = useContext(CartList)
-  const list = listContext.list
-
+  const list = listContext.list.items
   const list_ = (
 
 <ul className={ classes.list }>
  { list.map(item => (
- <li key={ item.id_ } onAdd={ listContext.add }>
-  { item.title }
- </li>
+ <Item
+  key={ item.id_ }
+  item={ item }
+  onAdd={ listContext.add.bind(null, item, null) }
+  onRemove={ listContext.remove.bind(null, item) }
+ />
  )) }
 </ul>
 
@@ -37,7 +40,9 @@ const Cart = dataProps => {
  <div className={ classes.total }>
   <span>total</span>
 
-  <span>{ list.length }</span>
+  <span className={ classes.green }>
+   { `$${listContext.list.total.toFixed(2)}` }
+  </span>
  </div>
 
  <div className={ classes.actions }>
@@ -45,9 +50,11 @@ const Cart = dataProps => {
    close
   </button>
 
+  { list.length > 0 && (
   <button className={ classes.button }>
    order
   </button>
+  ) }
  </div>
 
 

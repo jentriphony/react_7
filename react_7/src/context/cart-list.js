@@ -6,50 +6,60 @@ const CartList = createContext({})
 
 const increaseCountHandler = (previousList, item, count) => {
 
-  let index = null
-  if(previousList.find((item_, index_) => { 
-    const result = item_.id === item.id
-    if(result) {
-      index = index_
+  const previousItems = previousList.items
+  const count_ = count ? count : 1
+  const total = previousList.total + item.price * count_
+  const index = previousItems.findIndex(item_ => {
+    return item_.id === item.id
+  })
+  if(index !== -1) {
+    const items = [ ...previousItems ]
+    const item_ = { ...items[index] }
+    item_.count += count_
+    items[index] = item_
+    return {
+      items: items,
+      total: total
     }
-    return result
-  }) !== undefined) {
-    const list = JSON.parse(JSON.stringify(previousList))
-    list[index].count += count ? count : 1
-    return list
   }
-  const item_ = {...item}
-  item_.id_ = 'cart_item_' + (previousList.length + 1)
-  item_.count = count ? count : 1
-  return [
-    ...previousList,
-    item_
-  ]
+  const item_ = { ...item }
+  item_.count = count_
+  item_.id_ = 'cart_item_' + (previousItems.length + 1)
+  const items = previousItems.concat(item_)
+  return {
+    items: items,
+    total: total
+  }
 
 }
 
 const reduceCountHandler = (previousList, item) => {
 
-  let index = null
-  if(previousList.find((item_, index_) => {
-    const result = item_.id === item.id
-    if(result) {
-      index = index_
+  const previousItems = previousList.items
+  const total = previousList.total - item.price
+  const index = previousItems.findIndex(item_ => { 
+    return item_.id === item.id
+  })
+  if(index !== -1) {
+    if(previousItems[index].count > 1) {
+      const items = [ ...previousItems ]
+      const item_ = { ...items[index] }
+      --item_.count
+      items[index] = item_
+      return {
+	items: items,
+	total: total
+      }
     }
-    return result
-  }) !== undefined) {
-    const list = JSON.parse(JSON.stringify(previousList))
-    const count = list[index].count
-    if(count > 1) {
-      --list[index].count
-      return list
-    }
-    const result = list.filter(item_ => item_.id !== item.id).map((item_, index) => {
-      const item__ = {...item_}
+    const items = previousItems.filter(item_ => item_.id !== item.id).map((item_, index) => {
+      const item__ = { ...item_ }
       item__.id_ = 'cart_item_' + (index + 1)
       return item__
     })
-    return result
+    return {
+      items: items,
+      total: total
+    }
   }
 
 }
@@ -69,7 +79,10 @@ export const CartListProvider = dataProps => {
 
 
 
-  const [list, dispatchList] = useReducer(listReducer, [])
+  const [list, dispatchList] = useReducer(listReducer, {
+    items: [],
+    total: 0
+  })
 
 
 
@@ -90,7 +103,10 @@ export const CartListProvider = dataProps => {
 
 <CartList.Provider
  value={ {
-  list: list,
+  list: {
+    items: list.items,
+    total: list.total
+  },
   add: add,
   remove: remove
  } }

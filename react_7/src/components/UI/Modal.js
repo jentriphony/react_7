@@ -61,7 +61,7 @@ const Modal = dataProps => {
  <OverlayModal>
   { dataProps.children }
  </OverlayModal>,
- destination ) }
+ destination) }
 
 
 
