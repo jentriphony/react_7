@@ -1,2 +1,2 @@
 # react_7
-interaction_7_
+interaction_7_practice
